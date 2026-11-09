@@ -23,13 +23,17 @@
   table.st select{font-size:12px;max-width:112px}
   .panel{max-height:calc(100% - 64px);overflow:auto}
   .hint{position:absolute;right:12px;bottom:12px;font-size:12px;color:#666;background:rgba(255,255,255,.75);padding:6px 9px;border-radius:8px}
-  #min{position:absolute;right:12px;top:12px}
+  #min{position:absolute;right:10px;top:10px;padding:4px 8px}
+  #show{position:absolute;left:12px;bottom:12px;z-index:20;display:none;padding:10px 14px;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+  .panel{z-index:10}
+  .panel h1{padding-right:56px}
   @media (max-width:520px){.panel{max-width:calc(100% - 48px);font-size:12px}}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div class="panel" id="panel">
+  <button id="min">Hide</button>
   <h1>Living &amp; dining makeover</h1>
   <p>Burgundy daybed along the stair glass, frame shelves on the stair pillar and in the dining corner.</p>
   <div class="row">
@@ -74,7 +78,7 @@
   </div>
   <div class="sub">Layout and sizes are estimated from photos.</div>
 </div>
-<button id="min">Hide panel</button>
+<button id="show">☰ Menu</button>
 <div class="hint">Drag to rotate · pinch / scroll to zoom · right-drag to pan</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -414,7 +418,9 @@ document.querySelectorAll('select[data-all]').forEach(sel=>sel.addEventListener(
   sState.forEach((st,i)=>{st[sel.dataset.all]=sel.value;applyShelf(i);});sel.value='';}));
 [0,1,2].forEach(applyShelf);toggle('tglBed',bed);toggle('tglDining',dining);
 const panel=document.getElementById('panel'),minb=document.getElementById('min');
-minb.addEventListener('click',()=>{const h=panel.style.display==='none';panel.style.display=h?'':'none';minb.textContent=h?'Hide panel':'Show panel';});
+const showb=document.getElementById('show');
+minb.addEventListener('click',()=>{panel.style.display='none';showb.style.display='block';});
+showb.addEventListener('click',()=>{panel.style.display='';showb.style.display='none';});
 placeBed(80);setView('overview');
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 window.addEventListener('resize',resize);resize();
