@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Living &amp; dining makeover – 3D</title>
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#e9e6e1;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#2b2b2b}
+  html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;-webkit-text-size-adjust:100%;background:#e9e6e1;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#2b2b2b}
   #c{display:block;width:100%;height:100%;touch-action:none}
   .panel{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border-radius:12px;padding:12px 14px;box-shadow:0 2px 12px rgba(0,0,0,.12);max-width:290px;font-size:13px;line-height:1.35}
   .panel h1{font-size:14px;margin:0 0 6px}
@@ -116,6 +116,8 @@
   #blindsheet .xbtn{margin-left:auto}
   .hint{display:none!important}
   @media (max-width:520px){#blindsheet{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 176px);padding:10px}#blindsheet #blindbar{gap:6px}#panel{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 176px);max-height:calc(100% - 250px)}#navseg{width:128px}.dockb{width:42px;height:42px}#dock{gap:8px}}
+  button,select,input{touch-action:manipulation}
+  .sheet{touch-action:pan-y;overscroll-behavior:contain}
   #labels{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
   #labels .nb{position:absolute;min-width:24px;height:24px;padding:0 6px;box-sizing:border-box;border-radius:12px;transform:translate(-50%,-50%);
     font:600 12px/22px -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;letter-spacing:-.2px;text-align:center;color:#1d1d1f;
@@ -230,7 +232,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputEncoding=THREE.sRGBEncoding;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0xe9e6e1);
-const camera=new THREE.PerspectiveCamera(50,1,0.05,80);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,60);   // a deeper near plane keeps the depth buffer precise (no flicker)
 const controls=new THREE.OrbitControls(camera,canvas);
 controls.enableDamping=true; controls.maxPolarAngle=Math.PI*0.495;
 
@@ -522,7 +524,7 @@ boxXYZ(living,XM+0.35,XM+1.35,2.42,2.72,ZR-0.62,ZR-0.38,LM.ac);
  const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.07,16,12),M.lamp);bulb.position.set(X,2.8,Z);living.add(bulb);
  pendantLight(living,X,2.72,Z,1.5);}
 // end of the long wall toward the dining side: return wall with the cork board, then the door to the entrance
-boxXYZ(living,XM,XM+0.1,0,2.75,ZR,ZD+0.1,M.wall);                       // wall perpendicular to the long wall, in line with the dining pillar; continues as the entrance corridor wall
+boxXYZ(living,XM,XM+0.1,0,2.75,ZR+0.1,ZD+0.1,M.wall);                       // wall perpendicular to the long wall, in line with the dining pillar; continues as the entrance corridor wall
 // large teak-framed mirror on the same wall (faces the kitchen island): 2.4 x 1.39 m, 16.5 cm frame, 5 cm deep, 20 cm from the corner
 {const Y0=0.83,Y1=2.22,Z0=ZR+0.2,Z1=Z0+2.4,F=0.165,D=0.05,xf=XM;
  const tc=document.createElement('canvas');tc.width=512;tc.height=64;{const g=tc.getContext('2d');g.fillStyle='#7a4a2b';g.fillRect(0,0,512,64);const r=rnd(77);
@@ -541,18 +543,18 @@ const ceilM=new THREE.MeshStandardMaterial({color:0xf4f2ee,roughness:.95});ceilM
 const ceiling=new THREE.Group();scene.add(ceiling);
 function ceil(x0,x1,z0,z1,y){const m=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0),ceilM);m.rotation.x=Math.PI/2;m.position.set((x0+x1)/2,y,(z0+z1)/2);m.receiveShadow=true;ceiling.add(m);}
 ceil(0,XC,-0.62,7.2,2.75);              // dining area, 2.75 m flat ceiling
-const slab=new THREE.Mesh(new THREE.BoxGeometry(XC,0.25,7.82),M.wall);slab.position.set(XC/2,2.75+0.125+0.002,(7.2-0.62)/2);ceiling.add(slab);   // dining ceiling slab (the floor above)
+const slab=new THREE.Mesh(new THREE.BoxGeometry(XC-0.12,0.25,7.82),M.wall);slab.position.set((XC+0.12)/2,2.78+0.125,(7.2-0.62)/2);ceiling.add(slab);   // dining ceiling slab (the floor above)
 ceil(-1.2,0,3.35,7.2,2.75);             // between the stairwell and the corridor
 ceil(-1.2,0,-0.62,3.35,5.4);            // open stairwell, double height
 ceil(XC,FAR,-0.72,ZR-0.75,5.4);         // living room, double height
 ceil(XB,FAR,ZR-0.75,ZR,5.4);
 // vertical faces where the ceiling height changes
-boxXYZ(ceiling,XC,XC+0.2,2.75,5.4,-0.72,ZR-0.75,M.wall,false);   // dining / living step, in line with the dining pillar
+boxXYZ(ceiling,XC,XC+0.2,2.75,5.4,-0.72,ZR-0.86,M.wall,false);   // dining / living step, in line with the dining pillar
 boxXYZ(ceiling,XC+0.2,XC+0.44,3.0,3.3,0.9,1.9,mat(0xf2f1ee,.5),false);     // air-conditioner above the opening, facing the living room
 // low strip along the long wall as one solid block: its underside is the 2.75 m ceiling, its faces the step up to the double height
 boxXYZ(ceiling,XC,XB,2.75,5.4,ZR-0.85,ZR+0.1,M.wall,false);
-boxXYZ(ceiling,0,0.1,2.75,3.25,-0.62,3.35,M.greyWall,false);     // grey soffit at the edge of the stairwell
-boxXYZ(ceiling,-1.2,0.1,2.75,3.25,3.35,3.45,M.greyWall,false);
+boxXYZ(ceiling,0,0.1,2.745,3.25,-0.62,3.35,M.greyWall,false);     // grey soffit at the edge of the stairwell
+boxXYZ(ceiling,-1.2,0.1,2.745,3.25,3.35,3.45,M.greyWall,false);
 
 // ---------- dining set
 const dining=new THREE.Group();scene.add(dining);
@@ -584,7 +586,7 @@ function chair(x,z,rot){const c=new THREE.Group();c.position.set(x,0,z);c.rotati
 const G=new THREE.Group();G.rotation.y=Math.PI/2;G.position.set(0,0,3.35);scene.add(G);
 const RISE=0.17, RUN=0.28, N=8, X0=0.70, W=1.0;
 for(let i=0;i<N;i++){const top=(i+1)*RISE, x=X0+i*RUN;
-  box(G,RUN,top,W,M.oak,x+RUN/2,top/2,-W/2-0.03);box(G,0.03,0.04,W,M.oak,x-0.005,top-0.02,-W/2-0.03);}
+  box(G,RUN,top,W,M.oak,x+RUN/2,top/2,-W/2-0.03);box(G,0.03,0.04,W+0.004,M.oak,x-0.005,top-0.017,-W/2-0.03);}
 const LANDX=X0+N*RUN, LANDH=N*RISE+RISE;
 box(G,3.35-LANDX,LANDH,W,M.oak,(LANDX+3.35)/2,LANDH/2,-W/2-0.03);
 const sh=new THREE.Shape();sh.moveTo(-3.6,0);sh.lineTo(X0,0);
@@ -623,13 +625,13 @@ box(G,2.9,5.4,0.1,M.wall,2.05,2.7,-1.15);      // ends where the corridor opens
 const doorMat=new THREE.MeshStandardMaterial({color:0xbfa67e,roughness:.6});   // light oak veneer doors, as in the videodoorMat.color.convertSRGBToLinear();
 const CZ0=2.75, CZ1=3.95, CH=2.4, CX=-5.0;            // corridor opening z 2.75..3.95 (starts right after the foot of the stairs; its kitchen-side wall lines up with the island), ceiling 2.4 m
 // stair-side corridor wall: door near the start, then the window recess
-boxXYZ(scene,-2.6,-1.1,0,CH,CZ0-0.1,CZ0,M.wall);boxXYZ(scene,CX,-4.85,0,CH,CZ0-0.1,CZ0,M.wall);
+boxXYZ(scene,-2.6,-1.2,0,CH,CZ0-0.1,CZ0,M.wall);boxXYZ(scene,CX,-4.85,0,CH,CZ0-0.1,CZ0,M.wall);
 const frameM=new THREE.MeshStandardMaterial({color:0xb39a72,roughness:.55});frameM.color.convertSRGBToLinear();
 function jamb(x0,x1,z,dir){const t=0.05,d=0.02,zz=z+dir*d;boxXYZ(scene,x0-t,x0,0,2.15,Math.min(z,zz),Math.max(z,zz),frameM);boxXYZ(scene,x1,x1+t,0,2.15,Math.min(z,zz),Math.max(z,zz),frameM);boxXYZ(scene,x0-t,x1+t,2.1,2.15,Math.min(z,zz),Math.max(z,zz),frameM);}
 // window recess in the stair-side corridor wall (like the big windows): black ledge flush with the wall face,
 // window at the back with two roller blinds, and a small grey bookshelf standing on the ledge at each end, facing each other
 {const RX0=-4.75,RX1=-2.6,RZ=CZ0-0.55,LY=0.6;
- boxXYZ(scene,RX0-0.1,RX0,0,CH,RZ-0.1,CZ0,M.wall);boxXYZ(scene,RX1,RX1+0.1,0,CH,RZ-0.1,CZ0,M.wall);           // recess sides
+ boxXYZ(scene,RX0-0.1,RX0,0,CH,RZ-0.1,CZ0-0.1,M.wall);boxXYZ(scene,RX1,RX1+0.1,0,CH,RZ-0.1,CZ0-0.1,M.wall);           // recess sides
  boxXYZ(scene,RX0,RX1,0,LY-0.04,RZ,CZ0,M.wall);                                                               // white base
  boxXYZ(scene,RX0,RX1,LY-0.04,LY,RZ,CZ0+0.005,mat(0x111214,.2));                                              // black ledge
  boxXYZ(scene,RX0,RX1,CH,CH+0.12,RZ-0.1,CZ0-0.1,M.wall,false);                                                // recess ceiling
@@ -648,9 +650,9 @@ function jamb(x0,x1,z,dir){const t=0.05,d=0.02,zz=z+dir*d;boxXYZ(scene,x0-t,x0,0
    [BY0+T,(BY0+BY1)/2+T/2].forEach((yb,r)=>{for(let i=0;i<11;i++){const z=D0+0.03+i*0.036;if(z>D1-0.05)break;
      boxXYZ(scene,side<0?x0+T:x1-T-0.2,side<0?x0+T+0.2:x1-T,yb,yb+0.2+((i*7)%3)*0.02,z,z+0.028,mat(cols[(i+r*2)%6],.7));}});});}
 const cf=new THREE.Mesh(new THREE.PlaneGeometry(-1.1-CX+0.4,CZ1-CZ0+0.2),M.floor);cf.rotation.x=-Math.PI/2;cf.position.set((CX-1.1)/2-0.2,0.001,(CZ0+CZ1)/2);cf.receiveShadow=true;scene.add(cf);
-boxXYZ(scene,CX,-1.1,0,CH,CZ1,CZ1+0.1,M.wall);   // corridor wall with the doors
+boxXYZ(scene,CX,-1.2,0,CH,CZ1,CZ1+0.1,M.wall);   // corridor wall with the doors
 boxXYZ(scene,CX-0.1,CX,0,CH,CZ0-0.1,CZ1+0.1,M.wall); // corridor end
-boxXYZ(scene,CX,-1.1,CH,CH+0.12,CZ0-0.1,CZ1+0.1,M.wall,false); // corridor ceiling
+boxXYZ(scene,CX,-1.2,CH,CH+0.12,CZ0-0.1,CZ1+0.1,M.wall,false); // corridor ceiling
 boxXYZ(scene,-1.2,-1.1,CH,5.4,CZ0,3.35,M.wall,false);boxXYZ(scene,-1.2,-1.1,CH,2.75,3.35,CZ1,M.wall,false);  // bulkhead / wall above the opening
 [-3.15,-4.1].forEach(x=>{jamb(x-0.43,x+0.43,CZ1,-1);boxXYZ(scene,x-0.43,x+0.43,0,2.1,CZ1-0.03,CZ1,doorMat);boxXYZ(scene,x+0.3,x+0.36,0.98,1.0,CZ1-0.06,CZ1-0.03,M.steel);});
 jamb(-2.45,-1.55,CZ0,1);boxXYZ(scene,-2.45,-1.55,0,2.1,CZ0,CZ0+0.03,doorMat);boxXYZ(scene,-1.68,-1.62,0.98,1.0,CZ0+0.03,CZ0+0.06,M.steel);   // door on the stair side
@@ -670,7 +672,7 @@ const kitchen=new THREE.Group();scene.add(kitchen);
  const U1=EW,U0=U1-2.65,UZ=ZK-0.62,FL=0.18,FR=0.2,TOPY=1.83;              // 2.65 m wall system: 18 cm side panel by the doorway, 20 cm by the entrance
  const D1=U0-0.03,D0=D1-0.9;                                       // doorway right next to the units, directly in front of the stairs
  boxXYZ(kitchen,XS,D0-0.05,0,2.75,ZK,ZK+0.1,M.wall);
- boxXYZ(kitchen,D0,D1,2.4,2.75,ZK,ZK+0.1,M.wall);boxXYZ(kitchen,D0,D1,0,2.4,ZK+0.08,ZK+0.1,KM.dark);
+ boxXYZ(kitchen,D0,D1,2.45,2.75,ZK,ZK+0.1,M.wall);boxXYZ(kitchen,D0,D1,0,2.4,ZK+0.08,ZK+0.1,KM.dark);
  boxXYZ(kitchen,D0-0.05,D0,0,2.45,ZK-0.02,ZK+0.1,KM.frame);boxXYZ(kitchen,D1,D1+0.03,0,2.45,ZK-0.02,ZK+0.1,KM.frame);boxXYZ(kitchen,D0-0.05,D1+0.03,2.4,2.45,ZK-0.02,ZK+0.1,KM.frame);
  {const d=new THREE.Mesh(new THREE.BoxGeometry(0.04,2.38,0.85),doorMat);d.position.set(D0+0.02,1.19,ZK+0.5);kitchen.add(d);}
  // surround (sides, top, back) and the two columns
@@ -690,7 +692,7 @@ const kitchen=new THREE.Group();scene.add(kitchen);
  door(U0+FL,CM-0.015,TOPY,2.69);
  const spl=CM-0.015-(CM-0.015-U0-FL)*0.42;
  door(U0+FL,spl,0.6,TOPY);door(spl,CM-0.015,0.6,TOPY);door(spl,CM-0.015,0.06,0.6);
- boxXYZ(kitchen,U0+FL+0.02,spl-0.01,0.07,0.58,UZ-0.005,UZ+0.05,KM.wine);boxXYZ(kitchen,U0+FL+0.04,spl-0.03,0.09,0.56,UZ-0.008,UZ-0.005,KM.steel);
+ boxXYZ(kitchen,U0+FL+0.02,spl-0.01,0.07,0.58,UZ-0.005,UZ+0.05,KM.wine);boxXYZ(kitchen,U0+FL+0.04,spl-0.03,0.09,0.56,UZ-0.014,UZ-0.006,KM.steel);
  boxXYZ(kitchen,U0+FL,CM-0.015,0,0.06,UZ+0.05,UZ+0.08,KM.gap);
  // island: quartz top and waterfall ends with fine grey veining; dark panel set back on the side facing the stairs; sink near the far end
  const qc=document.createElement('canvas');qc.width=1024;qc.height=512;{const g=qc.getContext('2d');g.fillStyle='#f5f3ef';g.fillRect(0,0,1024,512);const r=rnd(21);
@@ -725,7 +727,7 @@ const kitchen=new THREE.Group();scene.add(kitchen);
  boxXYZ(kitchen,EW+0.1,EW+1.18,0,2.45,ZD-0.03,ZD,doorMat);boxXYZ(kitchen,EW+0.05,EW+1.23,0,2.5,ZD-0.015,ZD,KM.frame);
  boxXYZ(kitchen,EW,EW+0.03,0,2.6,ZD-0.38,ZD,KM.grey);
  boxXYZ(kitchen,EW+0.25,EW+0.29,0.95,1.2,ZD-0.06,ZD-0.03,KM.wine);                       // digital lock
- ceil(EW-0.1,XM,ZK,ZD,2.75);
+ ceil(EW-0.1,XM,7.2,ZD,2.75);
  // framed woodblock prints: snowy Fuji with river (entrance) and Fuji at Lake Motosu (corridor)
  function printTex(kind){const c=document.createElement('canvas');c.width=300;c.height=300;const g=c.getContext('2d');
    g.fillStyle='#ece6dc';g.fillRect(0,0,300,300);g.fillStyle='#f7f5f0';g.fillRect(14,14,272,272);
@@ -825,6 +827,9 @@ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',
 placeBed(80);setView('overview');
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 window.addEventListener('resize',resize);resize();
+if(window.visualViewport)visualViewport.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,250));
+['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));   // no page pinch-zoom on iPad/iPhone
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 
 // ---------- daylight: sun path for Singapore (1.35°N, 103.8°E, UTC+8) on today's date; windows face 120° (SE)
 const sun=new THREE.DirectionalLight(0xfff4e0,0);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
